@@ -1,0 +1,17 @@
+Cytometry analysis pipeline for large and complex datasets
+
+MAIN COMPUTATION SCRIPT
+
+    CAPXpipe (ctrl panel, data management, parameter select, FlowSOM, tSNE, tSNEplots)
+
+FURTHER INTERPRETATION
+    ClustColRandom:    Colour clusters (random colours)
+    ClustColSpecific:  Colour clusters (specific colours)
+    PopName:           Add population name and number to files
+    HeatmapMFI:        Generate a heatmap visualising MFI patterns
+
+
+SAMPLE CHANGES OVER CONDITIONS
+    Condense:            Condense data to number of cells (in each cluster or pop) per sample
+    HeatmapFOLD:         Generate a heatmap visualising fold-change
+    AutoGraph
