@@ -14,4 +14,4 @@ FURTHER INTERPRETATION
 SAMPLE CHANGES OVER CONDITIONS
     Condense:            Condense data to number of cells (in each cluster or pop) per sample
     HeatmapFOLD:         Generate a heatmap visualising fold-change
-    AutoGraph
+    AutoGraph:           Automated generation of point graphs to examine group differences
