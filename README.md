@@ -3,6 +3,7 @@ Cytometry analysis pipeline for large and complex datasets (CAPX).
 
 
 
+
 # Five scripts used in the CAPX pipeline
 
 ### CAPX-1-preprocessing
@@ -24,3 +25,18 @@ Summary tables for sample MFI and cell frequencies, plotted on heatmaps
 ### CAPX-5-autograph
 
 Automated generation of dot graphs (like bar graphs) for group comparisons and statistical analysis
+
+
+
+# Extra scripts for additional functions
+
+FlexiPlots
+
+tSNEplots
+
+HeatMaps
+
+SumTables
+
+AutoGraph
+
