@@ -3,7 +3,7 @@
 
 
 
-# Three main scripts used in the CAPX pipeline
+## Three main scripts used in the CAPX pipeline
 
 ### CAPX-1-preprocess
 
@@ -25,7 +25,7 @@ Explorationg of expression of each marker on each cluster, addition of a populat
 
 
 
-# Extra scripts for additional functions
+## Extra scripts for additional functions
 
 tSNEplots (https://github.com/sydneycytometry/tSNEplots)
 
