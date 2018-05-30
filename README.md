@@ -1,10 +1,9 @@
-# CAPX
-Cytometry analysis pipeline for large and complex datasets (CAPX).
+# Cytometry analysis pipeline for large and complex datasets (CAPX).
 
 
 
 
-# Five scripts used in the CAPX pipeline
+# Three main scripts used in the CAPX pipeline
 
 ### CAPX-1-preprocess
 
