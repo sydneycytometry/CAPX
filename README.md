@@ -8,35 +8,37 @@ Cytometry analysis pipeline for large and complex datasets (CAPX).
 
 ### CAPX-1-preprocess
 
-Pre-processing of data to prepare it for clustering and dimensionality reduction
+Pre-processing of data to prepare it for clustering and dimensionality reduction.
+
+
 
 ### CAPX-2-cluster
 
-Clustering of data using FlowSOM and visualisation using tSNE, with differnetial downsampling options
+Clustering of data using FlowSOM and visualisation using tSNE, with differential downsampling options. Will also use the code from 'tSNEplots' to generate coloured tSNE plot images for each marker and each sample. Other scripts can be used on the output data files to give an identity to each cluster (ClusterPlots, SumTables, HeatMap_MFI).
 
-### CAPX-3-identify
 
-Explorationg of expression of each marker on each cluster, addition of a population name
 
-### CAPX-4-analyse
+### CAPX-3-annotate
 
-Summary tables for sample MFI and cell frequencies, plotted on heatmaps
+Explorationg of expression of each marker on each cluster, addition of a population name.
 
-### CAPX-5-autograph
 
-Automated generation of dot graphs (like bar graphs) for group comparisons and statistical analysis
 
 
 
 # Extra scripts for additional functions
 
+tSNEplots (https://github.com/sydneycytometry/tSNEplots)
+
+ClusterPlots
+
 FlexiPlots
-
-tSNEplots
-
-HeatMaps
 
 SumTables
 
-AutoGraph
+HeatMaps_MFI
+
+HeatMaps_CellNum
+
+AutoGraph (https://github.com/sydneycytometry/AutoGraph)
 
