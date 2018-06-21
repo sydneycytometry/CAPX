@@ -12,7 +12,7 @@ Go to 'releases' above (https://github.com/sydneycytometry/CAPX/releases) and do
 
 **Citation**
 
-If you use this script in your work, please cite this github using the information below. You can cite the specific version that you used in your work (most recent version = v1.0-beta).
+If you use these scripts in your work, please cite this github using the information below. You can cite the specific version that you used in your work (most recent version = v1.0-beta).
 
 **Version history**
 
