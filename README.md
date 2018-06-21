@@ -8,6 +8,7 @@ This analysis pipleine uses three main scripts, described below.
 
 ### Three main scripts used in the CAPX pipeline
 
+
 **CAPX-1-preprocess**
 
 Pre-processing of data to prepare it for clustering and dimensionality reduction. Output is a 'clustering ready' .csv file (and .fcs file).
@@ -28,20 +29,26 @@ Following the explorationg marker expression on the cells and clusters generated
 
 ### Extra scripts for additional functions
 
+
 **tSNEplots** (https://github.com/sydneycytometry/tSNEplots) can be used to automatically create a coloured tSNE plot for every marker and sample (and group).
+
 
 **AutoGraph** (https://github.com/sydneycytometry/AutoGraph) can be used to automatically plot dot plots to compare measurements (cells per tissue, median fluorescence intensity (MFI) etc) of each cluster/population between groups.
 
 
 ### The following scripts will be included in the next release of CAPX:
 
+
 **ClusterPlots** - automated generation of coloured tSNE plots showing clusters.  
+
 
 **FlexiPlots** - a script with adjustable parameters for visualising plots
 
 **SumTables** - generates a table summarising the analysed dataset: samples vs clusters -- number of cells per cluster per sample, MFI of each marker on each cluster in each sample, etc.
 
+
 **HeatMaps_MFI** - generates a heatmap for measuring MFI for each marker on each cluster, per sample. Includes 'fold-change' visualisation options.
+
 
 **HeatMaps_CellNum** - generates a heatmap for measuring the number of cells in each cluster in each sample. Includes 'fold-change' visualisation options.
 
