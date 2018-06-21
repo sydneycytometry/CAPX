@@ -11,9 +11,11 @@ This analysis pipleine uses three main scripts, described below.
 Go to 'releases' above (https://github.com/sydneycytometry/CAPX/releases) and download source code for the latest version.
 
 **Citation**
+
 If you use this script in your work, please cite this github using the information below. You can cite the specific version that you used in your work (most recent version = v1.0-beta).
 
 **Version history**
+
 v1.0-beta - pre-release of v1.0. Fully functioning scripts, but two bugs present: a) reading .fcs files not currently compatible with the rbindlist package, so only reading .csv files will work; b) some users report that when output .fcs files are loaded in FlowJo, the ability to manipulate the axis has been removed.
 
 Ashhurst, T. M. (2018). Cytometry Analysis Pipeline for large and compleX dataests v1.0-beta. GitHub repository. DOI: TBC, repository: https://github.com/sydneycytometry/CAPX.
