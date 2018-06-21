@@ -28,17 +28,22 @@ Following the explorationg marker expression on the cells and clusters generated
 
 ## Extra scripts for additional functions
 
-tSNEplots (https://github.com/sydneycytometry/tSNEplots)
+tSNEplots (https://github.com/sydneycytometry/tSNEplots) can be used to automatically create a coloured tSNE plot for every marker and sample (and group).
 
-ClusterPlots
+AutoGraph (https://github.com/sydneycytometry/AutoGraph) can be used to automatically plot dot plots to compare measurements (cells per tissue, median fluorescence intensity (MFI) etc) of each cluster/population between groups.
 
-FlexiPlots
 
-SumTables
+## The following scripts will be included in the next release of CAPX:
 
-HeatMaps_MFI
+ClusterPlots - automated generation of coloured tSNE plots showing clusters.  
 
-HeatMaps_CellNum
+FlexiPlots - a script with adjustable parameters for visualising plots
 
-AutoGraph (https://github.com/sydneycytometry/AutoGraph)
+SumTables - generates a table summarising the analysed dataset: samples vs clusters -- number of cells per cluster per sample, MFI of each marker on each cluster in each sample, etc.
+
+HeatMaps_MFI - generates a heatmap for measuring MFI for each marker on each cluster, per sample. Includes 'fold-change' visualisation options.
+
+HeatMaps_CellNum - generates a heatmap for measuring the number of cells in each cluster in each sample. Includes 'fold-change' visualisation options.
+
+
 
