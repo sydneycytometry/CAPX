@@ -16,7 +16,7 @@ Pre-processing of data to prepare it for clustering and dimensionality reduction
 
 ### CAPX-2-cluster
 
-Data(including datasets of tens of millions of cells) using FlowSOM (https://www.ncbi.nlm.nih.gov/pubmed/25573116) and visualisated using tSNE (https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf) via the rtsne package (https://cran.r-project.org/web/packages/Rtsne/index.html), with differential downsampling options. This will also use the code from 'tSNEplots' (https://github.com/sydneycytometry/tSNEplots) to generate coloured tSNE plot images for each marker and each sample. Other scripts can be used on the output data files to give an identity to each cluster (ClusterPlots, SumTables, HeatMap_MFI).
+Data (including datasets of tens of millions of cells) is clustered using FlowSOM (https://www.ncbi.nlm.nih.gov/pubmed/25573116), subsampled (with differential downsampling options), and visualisated using tSNE (https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf) via the rtsne package (https://cran.r-project.org/web/packages/Rtsne/index.html). Subsequently, this script will also use the code from 'tSNEplots' (https://github.com/sydneycytometry/tSNEplots) to generate coloured tSNE plot images for each marker and each sample. Other scripts can be used on the output data files to give an identity to each cluster (ClusterPlots, SumTables, HeatMap_MFI).
 
 
 
