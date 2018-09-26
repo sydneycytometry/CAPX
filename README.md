@@ -29,18 +29,32 @@ Data (including datasets of tens of millions of cells) is clustered using FlowSO
 
 
 **Packages used**
+
+
 'plyr'
+
 'data.table'
+
 'rstudioapi'
+
 'devtools'
+
 'FlowSOM'
+
 'Rtsne'
+
 'ggplot2'
+
 'colorRamps'
+
 'ggthemes'
+
 'scales'
+
 'flowCore'
+
 'Biobase'
+
 'flowViz'
 
 
