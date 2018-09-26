@@ -58,7 +58,7 @@ Data (including datasets of tens of millions of cells) is clustered using FlowSO
 'flowViz'
 
 
-**Acknowledgements**
+**Specific references**
 
 
 Sofie Van Gassen, Britt Callebaut and Yvan Saeys (2017). FlowSOM: Using self-organizing maps for visualization and interpretation of cytometry data. http://www.r-project.org, http://dambi.ugent.be.
@@ -82,13 +82,10 @@ Jesse H. Krijthe (2015). Rtsne: T-Distributed Stochastic Neighbor Embedding usin
 ### The following scripts provide helpful functionality, and can be found in CytoTools ###
 https://github.com/sydneycytometry/CytoTools
 
+**SumTables** - generates a table summarising the analysed dataset: samples vs clusters -- number of cells per cluster per sample, MFI of each marker on each cluster in each sample, etc.
+
+**HeatMaps** - generates a heatmap for measuring the number of cells in each cluster in each sample or the MFI for each marker on each cluster, per sample. Includes 'fold-change' visualisation options.
+
 **ClusterPlots** - automated generation of coloured tSNE plots showing clusters.  
 
 **FlexiPlots** - a script with adjustable parameters for visualising plots
-
-**SumTables** - generates a table summarising the analysed dataset: samples vs clusters -- number of cells per cluster per sample, MFI of each marker on each cluster in each sample, etc.
-
-**HeatMaps_MFI** - generates a heatmap for measuring MFI for each marker on each cluster, per sample. Includes 'fold-change' visualisation options.
-
-**HeatMaps_CellNum** - generates a heatmap for measuring the number of cells in each cluster in each sample. Includes 'fold-change' visualisation options.
-
