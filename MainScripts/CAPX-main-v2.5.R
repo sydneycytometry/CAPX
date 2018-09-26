@@ -1,4 +1,4 @@
-### Cytometry Analysis Pipeline for Complex Datasets (CAPX) v2.4
+### Cytometry Analysis Pipeline for Complex Datasets (CAPX) v2.5
 
     # Thomas Ashhurst
     # 2018-05-30
@@ -41,7 +41,8 @@
                 if(!require('devtools')){install.packages("devtools")}
             
             ## From CRAN (required for clustering and tSNE)
-                if(!require('FlowSOM')) {devtools::install_github("SofieVG/FlowSOM")} # for running FlowSOM ### POSSIBLY INSTALL FROM GITHUB
+                if(!require('FlowSOM')) {source("https://bioconductor.org/biocLite.R") # for running FlowSOM ### POSSIBLY INSTALL FROM GITHUB
+                  biocLite('FlowSOM')} 
                 if(!require('Rtsne')) {install.packages("Rtsne")} # for running tSNE
 
             ## From CRAN (only required for plotting -- if installation unsuccessful, set Run_tSNEplots and Run_ClusterPlots to 0)
