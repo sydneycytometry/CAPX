@@ -4,13 +4,16 @@
 The Cytometry Analysis Pipeline for large and compleX datasets (CAPX) is workflow for discovery analysis of high-dimensional cytometry data. Specifically the CAPX workflow is provided here as a set of scripts that bring together existing clustering and data visualisation tools into a single pipeline. This is used as an analysis pipeline at the Sydney Cytometry facility for high-dimensional flow and mass cytometry data. This same approach can be undertaken largely in FlowJo or cytofkit (see https://sydneycytometry.org.au/capx for more information).
 
 
-## How to download ##
+## Usage ##
+
+
+**Download**
 
 
 Go to 'releases' above (https://github.com/sydneycytometry/CAPX/releases) and download source code for the latest version.
 
 
-## How to download ##
+**Protocols**
 
 
 For usage instructions, please see https://github.com/sydneycytometry/CAPX/wiki/CAPX-usage-protocol.
