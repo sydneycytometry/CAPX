@@ -31,10 +31,10 @@ AutoGraph (https://github.com/sydneycytometry/AutoGraph) can be used to automati
 For usage instructions, please see https://github.com/sydneycytometry/CAPX/wiki/CAPX-usage-protocol.
 
 
-**Citation**
+## Citation ##
 
 
-If you use these scripts in your work, please cite this github using the information below. You can cite the specific version that you used in your work (most recent version = v2.5).
+If you use these scripts in your work, please cite this github using the information below. You can cite the specific version that you used in your work.
 
 
 Ashhurst, T. M. (2018). Cytometry Analysis Pipeline for large and compleX dataests v2.5. GitHub repository. DOI: TBC, repository: https://github.com/sydneycytometry/CAPX.
@@ -43,16 +43,11 @@ Ashhurst, T. M. (2018). Cytometry Analysis Pipeline for large and compleX dataes
 **Version history**
 
 
-v1.0-beta - pre-release of v1.0. Fully functioning scripts, but two bugs present: a) reading .fcs files not currently compatible with the rbindlist package, so only reading .csv files will work; b) some users report that when output .fcs files are loaded in FlowJo, the ability to manipulate the axis has been removed.
-
-
-## Extra scripts for additional functions ##
-
-
-
+See https://github.com/sydneycytometry/CAPX/releases.
 
 
 ## References ##
+
 
 **Packages used**
 
