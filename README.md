@@ -4,13 +4,25 @@
 The Cytometry Analysis Pipeline for large and compleX datasets (CAPX) is workflow for discovery analysis of high-dimensional cytometry data. Specifically the CAPX workflow is provided here as a set of scripts that bring together existing clustering and data visualisation tools into a single pipeline. This is used as an analysis pipeline at the Sydney Cytometry facility for high-dimensional flow and mass cytometry data. This same approach can be undertaken largely in FlowJo or cytofkit (see https://sydneycytometry.org.au/capx for more information).
 
 
-## Usage ##
+Data (including datasets of tens of millions of cells) is clustered using FlowSOM (https://www.ncbi.nlm.nih.gov/pubmed/25573116), subsampled (with differential downsampling options), and visualisated using tSNE (https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf, https://www.ncbi.nlm.nih.gov/pubmed/23685480) via the rtsne package (https://cran.r-project.org/web/packages/Rtsne/index.html). Subsequently, this script will also use the code from 'tSNEplots' (https://github.com/sydneycytometry/tSNEplots) to generate coloured tSNE plot images for each marker and each sample. Other scripts can be used on the output data files to give an identity to each cluster (ClusterPlots, SumTables, HeatMap_MFI).
 
 
-**Download**
+## Getting started ##
+
+
+**Download CAPX script**
 
 
 Go to 'releases' above (https://github.com/sydneycytometry/CAPX/releases) and download source code for the latest version.
+
+
+**Download supporting scripts**
+
+
+CytoTools (https://github.com/sydneycytometry/CytoTools) provides a number of supporting scripts, including: SumTables (generates a table summarising the analysed dataset: samples vs clusters -- number of cells per cluster per sample, MFI of each marker on each cluster in each sample, etc), HeatMaps (generates a heatmap for measuring the number of cells in each cluster in each sample or the MFI for each marker on each cluster, per sample. Includes 'fold-change' visualisation options), ClusterPlots (automated generation of coloured tSNE plots showing clusters), and FlexiPlots (a script with adjustable parameters for visualising plots).
+
+AutoGraph (https://github.com/sydneycytometry/AutoGraph) can be used to automatically plot dot plots to compare measurements (cells per tissue, median fluorescence intensity (MFI) etc) of each cluster/population between groups.
+
 
 
 **Protocols**
@@ -28,12 +40,6 @@ If you use these scripts in your work, please cite this github using the informa
 Ashhurst, T. M. (2018). Cytometry Analysis Pipeline for large and compleX dataests v2.5. GitHub repository. DOI: TBC, repository: https://github.com/sydneycytometry/CAPX.
 
 
-**Overview**
-
-
-Data (including datasets of tens of millions of cells) is clustered using FlowSOM (https://www.ncbi.nlm.nih.gov/pubmed/25573116), subsampled (with differential downsampling options), and visualisated using tSNE (https://lvdmaaten.github.io/publications/papers/JMLR_2014.pdf, https://www.ncbi.nlm.nih.gov/pubmed/23685480) via the rtsne package (https://cran.r-project.org/web/packages/Rtsne/index.html). Subsequently, this script will also use the code from 'tSNEplots' (https://github.com/sydneycytometry/tSNEplots) to generate coloured tSNE plot images for each marker and each sample. Other scripts can be used on the output data files to give an identity to each cluster (ClusterPlots, SumTables, HeatMap_MFI).
-
-
 **Version history**
 
 
@@ -43,22 +49,7 @@ v1.0-beta - pre-release of v1.0. Fully functioning scripts, but two bugs present
 ## Extra scripts for additional functions ##
 
 
-**tSNEplots** (https://github.com/sydneycytometry/tSNEplots) can be used to automatically create a coloured tSNE plot for every marker and sample (and group).
 
-
-**AutoGraph** (https://github.com/sydneycytometry/AutoGraph) can be used to automatically plot dot plots to compare measurements (cells per tissue, median fluorescence intensity (MFI) etc) of each cluster/population between groups.
-
-
-### The following scripts provide helpful functionality, and can be found in CytoTools ###
-https://github.com/sydneycytometry/CytoTools
-
-**SumTables** - generates a table summarising the analysed dataset: samples vs clusters -- number of cells per cluster per sample, MFI of each marker on each cluster in each sample, etc.
-
-**HeatMaps** - generates a heatmap for measuring the number of cells in each cluster in each sample or the MFI for each marker on each cluster, per sample. Includes 'fold-change' visualisation options.
-
-**ClusterPlots** - automated generation of coloured tSNE plots showing clusters.  
-
-**FlexiPlots** - a script with adjustable parameters for visualising plots
 
 
 ## References ##
