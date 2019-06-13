@@ -1,7 +1,7 @@
-### Cytometry Analysis Pipeline for Complex Datasets (CAPX) v2.5
+### Cytometry Analysis Pipeline for Complex Datasets (CAPX) v2.5_FMW
 
-    # Thomas Ashhurst
-    # 2018-05-30
+    # Thomas Ashhurst/Felix Marsh-Wakefield
+    # 2019-06-07
     # thomas.ashhurst@sydney.edu.au
     # www.github.com/SydneyCytometry/CAPX
 
@@ -266,7 +266,10 @@
  
             ## Set downsample targets (must be less than cells in sample)
                 as.matrix(nrow_check)                     # Check the number of cells in each sample
-                downsample.targets      <- c(rep(9000, 12))
+                downsample.targets      <- c(rep(9000, each=length(unique(AllSampleNos))))
+                
+                # Use to set downsample value to be equal to minimum value
+                #downsample.targets <- c(rep(nrow_check[[which.min(nrow_check)]], each=length(unique(AllSampleNos))))
                 
                 as.matrix(nrow_check) # Cells in sample
                 as.matrix(downsample.targets) # Downsample targest   
@@ -372,22 +375,35 @@
                 ColumnNames <- unname(colnames(data)) # assign reporter and marker names (column names) to 'ColumnNames'
                 as.matrix(ColumnNames) # view the column 'number' for each parameter
                 
-            ## Specify column numbers to be used for clustering
+            ## Specify column numbers to be used for clustering and first tSNE plots
                 ClusteringColNos <- c(5,6,8,9,11,13,17:19,21:29,32)
                 ClusteringColNos
                 
                 ClusteringCols <- ColumnNames[ClusteringColNos] # e.g. [c(11, 23, 10)] to include the markers corresponding to the column numbers 11, 23, 10
                 
                 ClusteringCols  # check that the column names that appear are the ones you want to analyse
-                ColumnNames[-ClusteringColNos] # Check which columns are being EXCLUDED!   
+                ColumnNames[-ClusteringColNos] # Check which columns are being EXCLUDED! 
+                
+                #If tSNE plots are to use different markers for algorithm, state them here (e.g. including all markers)
+                as.matrix(ColumnNames)
+                
+                ClusteringColNos_tSNE <- c(2,4:6,8:9,11:13,16:19,21:30,32)
+                ClusteringColNos_tSNE
+                
+                ClusteringCols_tSNE <- ColumnNames[ClusteringColNos_tSNE]
                 
     ### 4.3 - Specify CLUSTERING options   
             
             ## FlowSOM options
                 Run_FlowSOM           <- 1                # Option to run FlowSOM. Enter 1 for yes, or 0 for no
                 FlowSOM_k             <- 40               # Number of metaclusters to derive from FlowSOM (can also be selected automatically, but this often does not perform well)
-                FlowSOM_seed          <- 42               # Seed for running FlowSOM
+                FlowSOM_seedA          <- 8               # Seed for running FlowSOM
                 FlowSOM_meta_seed     <- 42               # Seed for metaclustering
+                
+                # Repeat FlowSOM run with extra seeds
+                Run_FlowSOM_repeat     <- 1               # Option to run FlowSOM with extra seeds. Enter 1 for yes, or 0 for no
+                FlowSOM_seedB          <- 12              # 2nd seed for running FlowSOM
+                FlowSOM_seedC          <- 42              # 3rd seed for running FlowSOM
                 
                 FlowSOM_clus_name     <- "FlowSOM_original_cluster" # Label for metacluster parameter name
                 FlowSOM_meta_name     <- "FlowSOM_meta_cluster" # Label for metacluster parameter name
@@ -399,16 +415,27 @@
                 
     ### 4.4 - Specify tSNE options   
                                 
-            ## tSNE options
+            ## tSNE options for first run
                 Run_tSNE              <- 1                # Option to run tSNE. Enter a 1 to run tSNE, or 0 to skip 
                 tSNE_seed             <- 42               # Seed for running tSNE
-                tSNE_X_name           <- "tSNE1"          # Label for tSNE1 parameter
-                tSNE_Y_name           <- "tSNE2"          # Label for tSNE2 parameter
+                tSNE_X_name           <- "tSNE_X_select"          # Label for tSNE1 parameter
+                tSNE_Y_name           <- "tSNE_Y_select"          # Label for tSNE2 parameter
                 
                 write.pre.tSNE        <- 1              # Save a csv of the data that was used for clustering (i.e. including only columns desired for clustering)
                 write.tSNE.merged     <- 1              # Do you want to write one large merged file? No = 0, Yes = 1
                 write.tSNE.sep         <- 1              # Do you also want to write indivdual files for each sample? No = 0, Yes = 1
                 write.tSNE.group       <- 1              # Do you also want to write one file for each group? (requires use.groups = 1) No = 0, Yes = 1
+                
+            ## tSNE options for second run (this can be used to have a second tSNE plot using different markers than what was used for FlowSOM)
+                Run_tSNE2             <- 1                # Option to run tSNE. Enter a 1 to run tSNE, or 0 to skip 
+                tSNE_seed2            <- 42               # Seed for running tSNE
+                tSNE_X_name2          <- "tSNE_X_all"          # Label for tSNE1 parameter
+                tSNE_Y_name2          <- "tSNE_Y_all"          # Label for tSNE2 parameter
+                
+                write.pre.tSNE2       <- 1              # Save a csv of the data that was used for clustering (i.e. including only columns desired for clustering)
+                write.tSNE.merged2    <- 1              # Do you want to write one large merged file? No = 0, Yes = 1
+                write.tSNE.sep2       <- 1              # Do you also want to write indivdual files for each sample? No = 0, Yes = 1
+                write.tSNE.group2     <- 1              # Do you also want to write one file for each group? (requires use.groups = 1) No = 0, Yes = 1
                 
             ## tSNE downsampling options
                 tSNE_dwnsmpl          <- "specific"       # can be "specific" or "uniform". 'specific' means each sample is downsampled to a specific value. 'uniform' means the entire dataset will be evenly downsampled to a target total number of cells. 
@@ -536,9 +563,9 @@
         }
 
         
-###################################################### 3. DATA PREP FOR CLUSTERING ######################################################         
+###################################################### 5. DATA PREP FOR CLUSTERING ######################################################         
         
-    ### 3.1. Save a copy of 'data' and a list of columns for clustering
+    ### 5.1. Save a copy of 'data' and a list of columns for clustering
         
         AllSampleNames <- unique(data[[samp.col]])
         AllGroupNames <- unique(data[[grp.col]])
@@ -554,6 +581,10 @@
         ClusteringCols_csv <- paste(paste0("Columns_for_Clustering"), ".csv", sep = "")
         write.csv(x = ClusteringCols, file = ClusteringCols_csv)
         
+        ## Export list of columns for second tSNE plot
+        tSNE2_Cols_csv <- paste(paste0("ClusteringColNos_tSNE"), ".csv", sep = "")
+        write.csv(x = ClusteringCols_tSNE, file = tSNE2_Cols_csv)
+        
         ## Export data in CSV format
         if(write.pre.FSOM == 1){
           data_csv <- paste(paste0(data.name), "_used_for_clustering", ".csv", sep = "")
@@ -561,11 +592,11 @@
         }
 
         
-###################################################### 4. FlowSOM ######################################################         
+###################################################### 6. FlowSOM ######################################################         
         
         if(Run_FlowSOM == 1) {
           
-          ### 4.1 - Create output directories
+        ### 6.1 - Create output directories
           
           setwd(OutputDirectory)
           dir.create("Output_FlowSOM", showWarnings = FALSE)
@@ -574,7 +605,7 @@
           dir.create("Output_FlowSOM_info", showWarnings = FALSE)
           dir.create("Output_FlowSOM_data", showWarnings = FALSE)
           
-          ### 4.2 - Prep data for FlowSOM
+        ### 6.2 - Prep data for FlowSOM
           
           ## Check data and data column names
           head(data)
@@ -600,10 +631,10 @@
           # choose markers for FlowSOM analysis
           FlowSOM_cols <- ClusteringCols
           
-          ### 4.3. - Run FlowSOM              
+        ### 6.3. - Run FlowSOM              
           
           ## set seed for reproducibility
-          set.seed(FlowSOM_seed)
+          set.seed(FlowSOM_seedA)
           
           ## run FlowSOM (initial steps prior to meta-clustering)
           FlowSOM_out <- FlowSOM::ReadInput(data_FlowSOM, transform = FALSE, scale = FALSE)
@@ -658,7 +689,7 @@
           
           ## save ORIGINAL cluster labels
           res.original <- data.frame("labels_pre" = labels_pre)
-          colnames(res.original)[grepl('labels_pre',colnames(res.original))] <- FlowSOM_clus_name
+          colnames(res.original)[grepl('labels_pre',colnames(res.original))] <- paste0(FlowSOM_clus_name, FlowSOM_seedA)
           
           dim(data)
           dim(res.original)
@@ -666,14 +697,13 @@
           
           ## save META cluster labels
           res.meta <- data.frame("labels" = labels)
-          colnames(res.meta)[grepl('labels',colnames(res.meta))] <- FlowSOM_meta_name
+          colnames(res.meta)[grepl('labels',colnames(res.meta))] <- paste0(FlowSOM_meta_name, FlowSOM_seedA)
           
           dim(data)
           dim(res.meta)
           head(res.meta)
           
-          
-          ### 4.4. - Add FlowSOM cluster numbers to data, then export data to .csv and .fcs 
+        ### 6.4. - Add FlowSOM cluster numbers to data
           
           ## Add FlowSOM original cluster number to data
           output_data <- cbind(data, res.original)
@@ -686,6 +716,174 @@
           data <- output_data
           head(data)
           dim(data)
+          
+          
+          ## Running FlowSOM with extra seeds
+          if (Run_FlowSOM_repeat == 1) {
+            
+           ### 6.4.1 - Prep data for FlowSOM
+            
+            ## Check data and data column names
+            head(data)
+            dimnames(data)[[2]]
+            
+            ## Create FCS file metadata - column names with descriptions
+            metadata <- data.frame(name=dimnames(data)[[2]], desc=paste('column',dimnames(data)[[2]],'from dataset'))
+            
+            ## Create flowframe with data
+            data.ff <- new("flowFrame",
+                           exprs=as.matrix(data), # in order to create a flow frame, data needs to be read as matrix
+                           parameters=AnnotatedDataFrame(metadata))
+            
+            head(exprs(data.ff))
+            
+            data_FlowSOM <- data.ff
+            
+            # choose markers for FlowSOM analysis
+            FlowSOM_cols <- ClusteringCols
+            
+           ### 6.4.2. - Run FlowSOM              
+            
+            ## set seed for reproducibility
+            set.seed(FlowSOM_seedB)
+            
+            ## run FlowSOM (initial steps prior to meta-clustering)
+            FlowSOM_out <- FlowSOM::ReadInput(data_FlowSOM, transform = FALSE, scale = FALSE)
+            FlowSOM_out <- FlowSOM::BuildSOM(FlowSOM_out, colsToUse = FlowSOM_cols)
+            FlowSOM_out <- FlowSOM::BuildMST(FlowSOM_out)
+            
+            ### some warnings will be returned because of the 'SampleName' and 'GroupName' entries
+
+            ## extract cluster labels (pre meta-clustering) from output object
+            labels_pre <- FlowSOM_out$map$mapping[, 1]
+            labels_pre
+            length(labels_pre)
+            res.original <- labels_pre
+            
+            ## run meta-clustering
+            FlowSOM_out_meta <- FlowSOM::metaClustering_consensus(FlowSOM_out$map$codes, k = FlowSOM_k, seed = FlowSOM_meta_seed)
+
+            ## extract META (?) cluster labels from output object
+            labels <- FlowSOM_out_meta[labels_pre]
+            
+            ## summary of cluster sizes and number of clusters
+            table(labels)
+            length(table(labels))
+            
+            ## save ORIGINAL cluster labels
+            res.original <- data.frame("labels_pre" = labels_pre)
+            colnames(res.original)[grepl('labels_pre',colnames(res.original))] <- paste0(FlowSOM_clus_name, FlowSOM_seedB)
+            
+            dim(data)
+            dim(res.original)
+            head(res.original)
+            
+            ## save META cluster labels
+            res.meta <- data.frame("labels" = labels)
+            colnames(res.meta)[grepl('labels',colnames(res.meta))] <- paste0(FlowSOM_meta_name, FlowSOM_seedB)
+            
+            dim(data)
+            dim(res.meta)
+            head(res.meta)
+            
+           ### 6.4.3 - Add FlowSOM cluster numbers to data
+            
+            ## Add FlowSOM original cluster number to data
+            output_data <- cbind(data, res.original)
+            data <- output_data
+            head(data)
+            dim(data)            
+            
+            ## Add FlowSOM meta cluster number to data
+            output_data <- cbind(data, res.meta) 
+            data <- output_data
+            head(data)
+            dim(data)
+            
+           ### 6.4.4 - Prep data for FlowSOM
+            
+            ## Check data and data column names
+            head(data)
+            dimnames(data)[[2]]
+            
+            ## Create FCS file metadata - column names with descriptions
+            metadata <- data.frame(name=dimnames(data)[[2]], desc=paste('column',dimnames(data)[[2]],'from dataset'))
+            
+            ## Create flowframe with data
+            data.ff <- new("flowFrame",
+                           exprs=as.matrix(data), # in order to create a flow frame, data needs to be read as matrix
+                           parameters=AnnotatedDataFrame(metadata))
+            
+            head(exprs(data.ff))
+            
+            data_FlowSOM <- data.ff
+            
+            # choose markers for FlowSOM analysis
+            FlowSOM_cols <- ClusteringCols
+            
+           ### 6.4.5. - Run FlowSOM              
+            
+            ## set seed for reproducibility
+            set.seed(FlowSOM_seedC)
+            
+            ## run FlowSOM (initial steps prior to meta-clustering)
+            FlowSOM_out <- FlowSOM::ReadInput(data_FlowSOM, transform = FALSE, scale = FALSE)
+            FlowSOM_out <- FlowSOM::BuildSOM(FlowSOM_out, colsToUse = FlowSOM_cols)
+            FlowSOM_out <- FlowSOM::BuildMST(FlowSOM_out)
+            
+            ### some warnings will be returned because of the 'SampleName' and 'GroupName' entries
+            
+            ## extract cluster labels (pre meta-clustering) from output object
+            labels_pre <- FlowSOM_out$map$mapping[, 1]
+            labels_pre
+            length(labels_pre)
+            res.original <- labels_pre
+            
+            ## run meta-clustering
+            FlowSOM_out_meta <- FlowSOM::metaClustering_consensus(FlowSOM_out$map$codes, k = FlowSOM_k, seed = FlowSOM_meta_seed)
+
+            ## extract META (?) cluster labels from output object
+            labels <- FlowSOM_out_meta[labels_pre]
+            
+            ## summary of cluster sizes and number of clusters
+            table(labels)
+            length(table(labels))
+            
+            ## save ORIGINAL cluster labels
+            res.original <- data.frame("labels_pre" = labels_pre)
+            colnames(res.original)[grepl('labels_pre',colnames(res.original))] <- paste0(FlowSOM_clus_name, FlowSOM_seedC)
+            
+            dim(data)
+            dim(res.original)
+            head(res.original)
+            
+            ## save META cluster labels
+            res.meta <- data.frame("labels" = labels)
+            colnames(res.meta)[grepl('labels',colnames(res.meta))] <- paste0(FlowSOM_meta_name, FlowSOM_seedC)
+            
+            dim(data)
+            dim(res.meta)
+            head(res.meta)
+            
+           ### 6.4.6 - Add FlowSOM cluster numbers to data
+            
+            ## Add FlowSOM original cluster number to data
+            output_data <- cbind(data, res.original)
+            data <- output_data
+            head(data)
+            dim(data)            
+            
+            ## Add FlowSOM meta cluster number to data
+            output_data <- cbind(data, res.meta) 
+            data <- output_data
+            head(data)
+            dim(data)
+            
+            
+          }
+          
+          
+        ### 6.5. - Export data to .csv and .fcs 
           
           ### testing: could make a 'list' with data and res, and use rbindlist(list) to merge them much faster than cbind
           #   test <- rbindlist(list(data, res))
@@ -715,7 +913,7 @@
           getwd()
           
 
-          ### X.X - Write merged sample file
+          ### 6.6 - Write merged sample file
           
               if(write.FSOM.merged == 1){
               
@@ -737,7 +935,7 @@
               #head(exprs(data.ff))
               }
           
-          ### 4.5. - Export each group as a separate .csv and .fcs file             
+          ### 6.7. - Export each group as a separate .csv and .fcs file             
           
               if(write.FSOM.group == 1){
                 for(a in AllGroupNames){
@@ -762,7 +960,7 @@
                 }
               }
           
-          ### 4.6. - Export each sample as a separate .csv and .fcs file             
+          ### 6.8. - Export each sample as a separate .csv and .fcs file             
               
               if(write.FSOM.sep == 1){
                 for (a in AllSampleNames) {
@@ -794,20 +992,20 @@
         }
         
 
-###################################################### 5. tSNE ######################################################                       
+###################################################### 7. tSNE-all markers ######################################################                       
         
-        if(Run_tSNE == 1){
+        if(Run_tSNE2 == 1){
           
-          ### 5.1 - Create output directories
+        ### 7.1 - Create output directories
           
           setwd(OutputDirectory)
-          dir.create("Output_tSNE", showWarnings = FALSE)
-          setwd("Output_tSNE")
+          dir.create("Output_tSNE_all", showWarnings = FALSE)
+          setwd("Output_tSNE_all")
           dir.create("Output_tSNE_info", showWarnings = FALSE)
           dir.create("Output_tSNE_data", showWarnings = FALSE)
           setwd(OutputDirectory)
           
-          ### 5.2 - Subsample full dataset (including FlowSOM cluster no, if FlowSOM was run)
+        ### 7.2 - Subsample full dataset (including FlowSOM cluster no, if FlowSOM was run)
           
           ## take res dataframe 'output_data'
           ## subsample to target no 'output_data_subsample'
@@ -843,20 +1041,20 @@
             dim(data_subsampled)
           }
           
-          ### 2.3 - Create set of column (parameter) names
+        ### 7.3 - Create set of column (parameter) names
           head(data_subsampled)                            # show data with headings
           
-          ColumnNames_for_tSNE <- unname(colnames(data_subsampled))[ClusteringColNos] # e.g. [c(11, 23, 10)] to include the markers corresponding to the column numbers 11, 23, 10
+          ColumnNames_for_tSNE <- unname(colnames(data_subsampled))[ClusteringColNos_tSNE] # e.g. [c(11, 23, 10)] to include the markers corresponding to the column numbers 11, 23, 10
           ColumnNames_for_tSNE  # check that the column names that appear are the ones you want to analyse
           
           dim(data_subsampled) # Review dimensionality of 'data' -- N events and N parameters
           data_specific <- data_subsampled[, ColumnNames_for_tSNE] # Prepare data for Rtsne --  select columns to use
           dim(data_specific) # Review dimensionality of 'data' -- N events and N parameters
           
-          ### 5.3 - Save a copy of 'data' and 'data specific'        
+        ### 7.4 - Save a copy of 'data' and 'data specific'        
           
           setwd(OutputDirectory)
-          setwd("Output_tSNE/Output_tSNE_info")
+          setwd("Output_tSNE_all/Output_tSNE_info")
           
           ## Export a list of parameters used to run tSNE and Phenograph
           tSNEparametersname <- paste0(data.name, "_data_and_columns_used_for_tSNE")
@@ -864,7 +1062,7 @@
           write.csv(x = data_specific, file = tSNEparameters)  
           
           ## Export subsampled data in CSV format (record of what was run)
-          if(write.pre.tSNE == 1){
+          if(write.pre.tSNE2 == 1){
             subsampled_data_name <- paste0(data.name, "_subsampled_data")
             subsampled_data <- paste(subsampled_data_name, ".csv", sep = "")
             write.csv(x = data_subsampled, file = subsampled_data)
@@ -872,18 +1070,18 @@
             
           }
           
-          ### 5.4 - Run tSNE ('data' at this point is scaled, transformed) -- RUN ALL OF STEP 5
+        ### 7.5 - Run tSNE ('data' at this point is scaled, transformed) -- RUN ALL OF STEP 5
           
           ## Set working directory to "Output_info"
           setwd(OutputDirectory)
-          setwd("Output_tSNE/Output_tSNE_info")
+          setwd("Output_tSNE_all/Output_tSNE_info")
           
           ## Turn sink on (send the verbose text from the tSNE algorithm progress updates to a .txt file)
           verbose_name <- paste0("tSNE_verbose_", data.name, ".txt")
           sink(file = verbose_name, append=TRUE, split=FALSE, type = c("output", "message"))
           
           ## Run tSNE algorithm
-          set.seed(tSNE_seed)                             # default = 42 -- sets seed for reproducibility, delete or comment out for random tSNE
+          set.seed(tSNE_seed2)                             # default = 42 -- sets seed for reproducibility, delete or comment out for random tSNE
           tsne_out <- Rtsne(as.matrix(data_specific),     # dataset (assigned above) read as a matrix
                             dims = 2,                     # default = 2 -- only input 2 or 3 (2 = plot in 2D, 3 = plot in 3D)
                             initial_dims = 50,            # default = 50 -- number of dimensions retained in initial PCA step
@@ -911,31 +1109,31 @@
           # "Error in inherits(.data, "split") : object 'tsne_out' not found"
           
           
-          ### 5.5 - Save info from tSNE run and add tSNE parameters to dataset
+        ### 7.6 - Save info from tSNE run and add tSNE parameters to dataset
           
           ## Save tsne_out output info as .csv (i.e., output settings as raw results)
           tsne_out.df <- ldply(tsne_out, data.frame)
           output_name <- paste0("tSNE_parameter_values_", data.name, ".csv")
-          write.csv(x = tsne_out.df, file = output_name) # pretty blood good -- doesn't give row number for Y, costs, or itercosts -- but easy to figure out
+          fwrite(x = tsne_out.df, file = output_name, row.names = TRUE) # pretty blood good -- doesn't give row number for Y, costs, or itercosts -- but easy to figure out
           
           ## Add Y (tSNE coordinate) values to starting data
           tsne_out_Y <- tsne_out$Y
           head(tsne_out_Y)
           
-          colnames(tsne_out_Y) <- c(tSNE_X_name, tSNE_Y_name)
+          colnames(tsne_out_Y) <- c(tSNE_X_name2, tSNE_Y_name2)
           head(tsne_out_Y)
           
           ## save cluster labels
           data_subsampled <- cbind(data_subsampled, tsne_out_Y)
           head(data_subsampled)
           
-          ### 3.5 - Write all data (with tSNE and FlowSOM parameters) to .csv and .fcs
+        ### 7.7 - Write all data (with tSNE and FlowSOM parameters) to .csv and .fcs
           
           ## Set working directory
           setwd(OutputDirectory)
-          setwd("Output_tSNE/Output_tSNE_data")
+          setwd("Output_tSNE_all/Output_tSNE_data")
               
-              if(write.tSNE.merged == 1){
+              if(write.tSNE.merged2 == 1){
     
                   ## Save data (with new tSNE parameters) as CSV
                   write.csv(x = data_subsampled, file = paste0(data.name, "_with_tSNE", ".csv"), row.names=FALSE)
@@ -970,8 +1168,8 @@
                   ### There is a delay here -- fcs file ends up in primary directory
               }
           
-          ### 3.7 - Write GROUPED data (with tSNE and FlowSOM parameters) to .csv and .fcs
-          if(write.tSNE.group == 1){
+        ### 7.8 - Write GROUPED data (with tSNE and FlowSOM parameters) to .csv and .fcs
+          if(write.tSNE.group2 == 1){
             for(a in AllGroupNames){
               data_subset <- subset(data_subsampled, data_subsampled[[grp.col]] == a)
               dim(data_subsampled)
@@ -994,9 +1192,9 @@
             }
           }
           
-          ### 3.8 - Write individual files (with tSNE and FlowSOM parameters) to .csv and .fcs     
+        ### 7.9 - Write individual files (with tSNE and FlowSOM parameters) to .csv and .fcs     
           
-          if(write.tSNE.sep == 1){
+          if(write.tSNE.sep2 == 1){
     
               for (a in AllSampleNames) {
                 data_subset <- subset(data_subsampled, data_subsampled[[samp.col]] == a)
@@ -1027,7 +1225,7 @@
         }
         
         
-###################################################### 6. tSNEplots ######################################################  
+###################################################### 8. tSNEplots-all markers ######################################################  
         
         if(Run_tSNEplots == 1){    
           
@@ -1036,7 +1234,7 @@
           
           ## Set your working directory here (e.g. "/Users/Tom/Desktop/")
           setwd(OutputDirectory)
-          setwd("Output_tSNE/Output_tSNE_data") 
+          setwd("Output_tSNE_all/Output_tSNE_data") 
           
           ## Assign the working directory as 'PrimaryDirectory'
           PlotDirectory <- getwd()
@@ -1047,11 +1245,11 @@
           PlotFiles
           
           ## In the output of the previous line, you will see the names for the tSNE parameters -- insert them in between the "" below
-          plotXname <- tSNE_X_name
-          plotYname <- tSNE_Y_name
+          plotXname <- tSNE_X_name2
+          plotYname <- tSNE_Y_name2
           
           
-          ##### STEP 2b: ESTABLISH GLOBAL SCALE LIMITS FOR COLOUR and XY #####
+        ##### 8.1 - ESTABLISH GLOBAL SCALE LIMITS FOR COLOUR and XY #####
           
           ## Create a 'list' of the data from all CSV files, then combine data into one large dataframe
           tables <- lapply(PlotFiles, read.csv, header = TRUE)
@@ -1075,7 +1273,7 @@
           # Also using STEP2b, the X and Y limits will be the same for all samples, despite what the individual sample max or min is
           
           
-          ##### STEP 3: Loop with  samples in separate folders #####  
+        ### 8.2 - Loop with  samples in separate folders #####  
           ## First, change the tSNE parameters (on lines 103 and 104)
           ## Then run all of the script below
           
@@ -1084,7 +1282,7 @@
           getwd()
           
           ## Create output folder (if a folder called "Output" already exists, nothing will happen)
-          dir.create("Output(tSNEplots)", showWarnings = FALSE)
+          dir.create("Output(tSNEplots-all)", showWarnings = FALSE)
           
           for (File in PlotFiles){ 
             
@@ -1104,7 +1302,7 @@
             plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
             
             ## Create subdirectory
-            setwd("Output(tSNEplots)") 
+            setwd("Output(tSNEplots-all)") 
             newdir <- paste0(File)
             dir.create(newdir, showWarnings = FALSE)
             setwd(newdir) 
@@ -1155,32 +1353,32 @@
         }
         
         
-###################################################### 7. ClusterPlots ######################################################  
+###################################################### 9. ClusterPlots-all ######################################################  
         
         if(Run_ClusterPlots == 1){
           
-          ### Setup
+        ### 9.1 - Setup
           
           ## WD and colours
           jet.black <- colorRampPalette(c("black", "#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000", "purple"))
           colour.scheme <- jet.black
           
           setwd(OutputDirectory)
-          setwd("Output_tSNE/Output_tSNE_data")
+          setwd("Output_tSNE_all/Output_tSNE_data")
           dir.create("Output_NumPlots", showWarnings = FALSE)
           
           FileNames <- list.files(path=getwd(), pattern = ".csv")
           FileNames
           
           ## In the output of the previous line, you will see the names for the tSNE parameters -- insert them in between the "" below
-          plotXname <- tSNE_X_name
-          plotYname <- tSNE_Y_name
+          plotXname <- tSNE_X_name2
+          plotYname <- tSNE_Y_name2
           cluster.name <- FlowSOM_meta_name
           
           cluspl.n.sub # already defined
           cluspl.n.sub.seed # already defined
           
-          ### Read files 
+        ### 9.2 - Read files 
           ## Read all CSV files into a list
           files  <- list.files(pattern = '\\.csv')
           
@@ -1198,11 +1396,11 @@
           Xmin <- min(combined.df[[plotXname]]) # double check function
           Ymin <- min(combined.df[[plotYname]])
           
-          ### Loop for Number Plot
+        ### 9.3 - Loop for Number Plot
           
           for (File in FileNames){ 
             setwd(OutputDirectory)
-            setwd("Output_tSNE/Output_tSNE_data")
+            setwd("Output_tSNE_all/Output_tSNE_data")
             
             ## CSV is read into dataframe 'CurrentSampleCSV'
             CurrentSampleCSV <- read.csv(File)
@@ -1222,11 +1420,17 @@
             ## Defines the 'tSNE' parameters that will be used to set the X and y axis
             plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
             plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+            
+            cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedA)
             clust.no <- CurrentSampleCSV[[cluster.name]]
             
             ## Subdirectory
             setwd(OutputDirectory)
-            setwd("Output_tSNE/Output_tSNE_data/Output_NumPlots")
+            setwd("Output_tSNE_all/Output_tSNE_data/Output_NumPlots")
+            dir.create(paste0("Output_NumPlots", "_seed", FlowSOM_seedA), showWarnings = FALSE)
+            
+            setwd(OutputDirectory)
+            setwd(paste0("Output_tSNE_all/Output_tSNE_data/Output_NumPlots/", "Output_NumPlots", "_seed", FlowSOM_seedA))
             
             tSNEplotLoop <- ggplot(
               data = `CurrentSampleCSV`,
@@ -1269,18 +1473,174 @@
             getwd()  
           }
           
+          if (Run_FlowSOM_repeat == 1){
+           ### 9.3.1 - Second FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              ## Subsample to pre-defined number manageable number of points (only if samples has more cells than the target downsample number)
+              if(nrow(CurrentSampleCSV) > cluspl.n.sub){
+                set.seed(cluspl.n.sub.seed)
+                CurrentSampleCSV <- CurrentSampleCSV[sample(1:nrow(CurrentSampleCSV), cluspl.n.sub), ]
+              }
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedB)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data/Output_NumPlots")
+              dir.create(paste0("Output_NumPlots", "_seed", FlowSOM_seedB), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all/Output_tSNE_data/Output_NumPlots/", "Output_NumPlots", "_seed", FlowSOM_seedB))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY)) +
+                scale_colour_gradientn(colours = colour.scheme(length(unique(clust.no)))) +
+                geom_text(aes(label=clust.no, colour=clust.no)) +
+                
+                #aes(x = plotX, y = plotY)) +
+                #geom_point(size = 0.5)+ # 2 for large # 0.5 for small
+                #scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  legend.text=element_text(size=15), # large = 30 # small = 8
+                  legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 6, height = 4.5) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()
+              
+            }
+            
+           ### 9.3.2 - Third FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              ## Subsample to pre-defined number manageable number of points (only if samples has more cells than the target downsample number)
+              if(nrow(CurrentSampleCSV) > cluspl.n.sub){
+                set.seed(cluspl.n.sub.seed)
+                CurrentSampleCSV <- CurrentSampleCSV[sample(1:nrow(CurrentSampleCSV), cluspl.n.sub), ]
+              }
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedC)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data/Output_NumPlots")
+              dir.create(paste0("Output_NumPlots", "_seed", FlowSOM_seedC), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all/Output_tSNE_data/Output_NumPlots/", "Output_NumPlots", "_seed", FlowSOM_seedC))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY)) +
+                scale_colour_gradientn(colours = colour.scheme(length(unique(clust.no)))) +
+                geom_text(aes(label=clust.no, colour=clust.no)) +
+                
+                #aes(x = plotX, y = plotY)) +
+                #geom_point(size = 0.5)+ # 2 for large # 0.5 for small
+                #scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  legend.text=element_text(size=15), # large = 30 # small = 8
+                  legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 6, height = 4.5) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()
+              
+            }
+            
+          }
           
           
-          ### CLUSTER COLOUR PLOT
+        ### 9.4 - CLUSTER COLOUR PLOT
           
           ## Set wd
           setwd(OutputDirectory)
-          setwd("Output_tSNE/Output_tSNE_data")
+          setwd("Output_tSNE_all/Output_tSNE_data")
           dir.create("Output_ClusterPlots", showWarnings = FALSE)
           
           for (File in FileNames){ 
             setwd(OutputDirectory)
-            setwd("Output_tSNE/Output_tSNE_data")
+            setwd("Output_tSNE_all/Output_tSNE_data")
             
             ## CSV is read into dataframe 'CurrentSampleCSV'
             CurrentSampleCSV <- read.csv(File)
@@ -1294,11 +1654,17 @@
             ## Defines the 'tSNE' parameters that will be used to set the X and y axis
             plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
             plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+            
+            cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedA)
             clust.no <- CurrentSampleCSV[[cluster.name]]
             
             ## Create subdirectory
             setwd(OutputDirectory)
-            setwd("Output_tSNE/Output_tSNE_data/Output_ClusterPlots")
+            setwd("Output_tSNE_all/Output_tSNE_data/Output_ClusterPlots")
+            dir.create(paste0("Output_ClusterPlots", "_seed", FlowSOM_seedA), showWarnings = FALSE)
+            
+            setwd(OutputDirectory)
+            setwd(paste0("Output_tSNE_all/Output_tSNE_data/Output_ClusterPlots/", "Output_ClusterPlots", "_seed", FlowSOM_seedA))
             
             tSNEplotLoop <- ggplot(
               data = `CurrentSampleCSV`,
@@ -1338,10 +1704,1002 @@
             getwd()  
           }
           
+          if (Run_FlowSOM_repeat == 1) {
+           ### 9.4.1 - Second FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedB)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Create subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data/Output_ClusterPlots")
+              dir.create(paste0("Output_ClusterPlots", "_seed", FlowSOM_seedB), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all/Output_tSNE_data/Output_ClusterPlots/", "Output_ClusterPlots", "_seed", FlowSOM_seedB))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY, colour = as.factor(clust.no))) +
+                geom_point(size = 1)+ # 2 for large # 0.5 for small
+                #scale_colour_gradientn(colours = colour.scheme(50)) + 
+                scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                ggtitle(cluster.name) +
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  #legend.text=element_text(size=10), # large = 30 # small = 8
+                  #legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  #legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  #legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 10.5, height = 6.75) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()  
+            }
+            
+           ### 9.4.2 - Second FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedC)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Create subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all/Output_tSNE_data/Output_ClusterPlots")
+              dir.create(paste0("Output_ClusterPlots", "_seed", FlowSOM_seedC), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all/Output_tSNE_data/Output_ClusterPlots/", "Output_ClusterPlots", "_seed", FlowSOM_seedC))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY, colour = as.factor(clust.no))) +
+                geom_point(size = 1)+ # 2 for large # 0.5 for small
+                #scale_colour_gradientn(colours = colour.scheme(50)) + 
+                scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                ggtitle(cluster.name) +
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  #legend.text=element_text(size=10), # large = 30 # small = 8
+                  #legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  #legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  #legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 10.5, height = 6.75) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()  
+              
+            }
+            
+          }
+          
           ## Move back to PrimaryDirectory
           setwd(PrimaryDirectory)
           getwd() 
         }   
         
+###################################################### 10. tSNE-select markers ######################################################                       
+        
+        if(Run_tSNE == 1){
+          
+        ### 10.1 - Create output directories
+          
+          setwd(OutputDirectory)
+          dir.create("Output_tSNE_all+select", showWarnings = FALSE)
+          setwd("Output_tSNE_all+select")
+          dir.create("Output_tSNE_info", showWarnings = FALSE)
+          dir.create("Output_tSNE_data", showWarnings = FALSE)
+          setwd(OutputDirectory)
+          
+        ### 10.2 - Subsample full dataset (including FlowSOM cluster no, if FlowSOM was run)
+          
+          ## take res dataframe 'output_data'
+          ## subsample to target no 'output_data_subsample'
+          ## reduce to data_specific 'output_data_subsample_specific'       
+          
+          ## output_data
+          head(data)
+          dim(data)
+          
+          ## Subsampling
+          
+          if(tSNE_dwnsmpl == "uniform"){
+            dim(data)
+            set.seed(tSNE_nsub_seed)
+            data_subsampled <- data[sample(1:nrow(data), tSNE_nsub), ]
+            dim(data_subsampled)
+            data_subsampled <- as.data.frame(data_subsampled)
+          }
+          
+          if(tSNE_dwnsmpl == "specific"){
+            
+            data_subsampled <- data.frame()
+            for (i in c(1:length(AllSampleNames))) {
+              nam <- AllSampleNames[i]
+              nsub <- tSNE.dwnsmp.targets[i] 
+              data.temp <- subset(data, data[[samp.col]] == nam) # works
+              nrow(data.temp)
+              set.seed(tSNE_nsub_seed)
+              data.temp <- data.temp[sample(1:nrow(data.temp), nsub), ]
+              nrow(data.temp)
+              data_subsampled <- rbind(data_subsampled, data.temp)
+            }
+            dim(data_subsampled)
+          }
+          
+        ### 10.3 - Create set of column (parameter) names
+          head(data_subsampled)                            # show data with headings
+          
+          ColumnNames_for_tSNE <- unname(colnames(data_subsampled))[ClusteringColNos] # e.g. [c(11, 23, 10)] to include the markers corresponding to the column numbers 11, 23, 10
+          ColumnNames_for_tSNE  # check that the column names that appear are the ones you want to analyse
+          
+          dim(data_subsampled) # Review dimensionality of 'data' -- N events and N parameters
+          data_specific <- data_subsampled[, ColumnNames_for_tSNE] # Prepare data for Rtsne --  select columns to use
+          dim(data_specific) # Review dimensionality of 'data' -- N events and N parameters
+          
+        ### 10.4 - Save a copy of 'data' and 'data specific'        
+          
+          setwd(OutputDirectory)
+          setwd("Output_tSNE_all+select/Output_tSNE_info")
+          
+          ## Export a list of parameters used to run tSNE and Phenograph
+          tSNEparametersname <- paste0(data.name, "_data_and_columns_used_for_tSNE")
+          tSNEparameters <- paste(tSNEparametersname, ".csv", sep = "")
+          write.csv(x = data_specific, file = tSNEparameters)  
+          
+          ## Export subsampled data in CSV format (record of what was run)
+          if(write.pre.tSNE == 1){
+            subsampled_data_name <- paste0(data.name, "_subsampled_data")
+            subsampled_data <- paste(subsampled_data_name, ".csv", sep = "")
+            write.csv(x = data_subsampled, file = subsampled_data)
+            
+            
+          }
+          
+        ### 10.5 - Run tSNE ('data' at this point is scaled, transformed) -- RUN ALL OF STEP 5
+          
+          ## Set working directory to "Output_info"
+          setwd(OutputDirectory)
+          setwd("Output_tSNE_all+select/Output_tSNE_info")
+          
+          ## Turn sink on (send the verbose text from the tSNE algorithm progress updates to a .txt file)
+          verbose_name <- paste0("tSNE_verbose_", data.name, ".txt")
+          sink(file = verbose_name, append=TRUE, split=FALSE, type = c("output", "message"))
+          
+          ## Run tSNE algorithm
+          set.seed(tSNE_seed)                             # default = 42 -- sets seed for reproducibility, delete or comment out for random tSNE
+          tsne_out <- Rtsne(as.matrix(data_specific),     # dataset (assigned above) read as a matrix
+                            dims = 2,                     # default = 2 -- only input 2 or 3 (2 = plot in 2D, 3 = plot in 3D)
+                            initial_dims = 50,            # default = 50 -- number of dimensions retained in initial PCA step
+                            perplexity = 30,              # default = 30
+                            theta = 0.5,                  # default = 0.5 -- use 0.5 for Barnes-Hut tSNE, 0.0 for exact tSNE (takes longer)
+                            check_duplicates = FALSE,      # default = TRUE, can set to FALSE if problematic
+                            pca = TRUE,                   # default = TRUE -- performs a PCA prior to actual tSNE run
+                            max_iter = 1000,              # default = 1000 -- default total iterations
+                            verbose = TRUE,               # default = FALSE -- best to set as TRUE to receive feedback
+                            is_distance = FALSE,          # default = FALSE -- experimental, using X as a distance matrix
+                            Y_init = NULL,                # default = NULL -- recommend to use NULL for random initialisation
+                            stop_lying_iter = 250,        # default = 250 -- number of iterations of early exaggeration
+                            mom_switch_iter = 250,        # default = 250 -- number of iterations before increased momentum of spread
+                            momentum = 0.5,               # default = 0.5 -- initial momentum of spread
+                            final_momentum = 0.8,         # default = 0.8 -- momentum of spread at 'final_momentum'
+                            eta = 200,                    # default = 200 -- learning rate
+                            exaggeration_factor = 12.0    # default = 12.0 -- factor used during early exaggeration
+          )
+          
+          ## turn sink off
+          sink()
+          
+          ## if tSNE detected duplicates, the following errors should occur: 
+          # "Error in Rtsne.default(as.matrix(data_specific), dims = 2, initial_dims = 50,  : Remove duplicates before running TSNE."
+          # "Error in inherits(.data, "split") : object 'tsne_out' not found"
+          
+          
+        ### 10.6 - Save info from tSNE run and add tSNE parameters to dataset
+          
+          ## Save tsne_out output info as .csv (i.e., output settings as raw results)
+          tsne_out.df <- ldply(tsne_out, data.frame)
+          output_name <- paste0("tSNE_parameter_values_", data.name, ".csv")
+          fwrite(x = tsne_out.df, file = output_name, row.names = TRUE) # pretty blood good -- doesn't give row number for Y, costs, or itercosts -- but easy to figure out
+          
+          ## Add Y (tSNE coordinate) values to starting data
+          tsne_out_Y <- tsne_out$Y
+          head(tsne_out_Y)
+          
+          colnames(tsne_out_Y) <- c(tSNE_X_name, tSNE_Y_name)
+          head(tsne_out_Y)
+          
+          ## save cluster labels
+          data_subsampled <- cbind(data_subsampled, tsne_out_Y)
+          head(data_subsampled)
+          
+        ### 10.7 - Write all data (with tSNE and FlowSOM parameters) to .csv and .fcs
+          
+          ## Set working directory
+          setwd(OutputDirectory)
+          setwd("Output_tSNE_all+select/Output_tSNE_data")
+          
+          if(write.tSNE.merged == 1){
+            
+            ## Save data (with new tSNE parameters) as CSV
+            write.csv(x = data_subsampled, file = paste0(data.name, "_with_tSNE", ".csv"), row.names=FALSE)
+            
+            ## Check data and data column names
+            head(data_subsampled)
+            dimnames(data_subsampled)[[2]]
+            
+            ## Create FCS file metadata - column names with descriptions
+            metadata <- data.frame(name=dimnames(data_subsampled)[[2]],
+                                   desc=paste('column',dimnames(data_subsampled)[[2]],'from dataset')
+            )
+            
+            ## Create FCS file metadata - ranges, min, and max settings
+            #metadata$range <- apply(apply(data_subsampled,2,range),2,diff)
+            metadata$minRange <- apply(data_subsampled,2,min)
+            metadata$maxRange <- apply(data_subsampled,2,max)
+            
+            ## Create flowframe with tSNE data
+            data_subsampled.ff <- new("flowFrame",
+                                      exprs=as.matrix(data_subsampled), # in order to create a flow frame, data needs to be read as matrix
+                                      parameters=AnnotatedDataFrame(metadata)
+            )
+            
+            ## Check flow frame
+            data_subsampled.ff
+            
+            ## Save flowframe as .fcs file -- save data (with new tSNE parameters) as FCS
+            new_file_name_fcs <- paste0(data.name, "_with_tSNE", ".fcs")
+            write.FCS(data_subsampled.ff, new_file_name_fcs)
+            
+            ### There is a delay here -- fcs file ends up in primary directory
+          }
+          
+        ### 10.8 - Write GROUPED data (with tSNE and FlowSOM parameters) to .csv and .fcs
+          if(write.tSNE.group == 1){
+            for(a in AllGroupNames){
+              data_subset <- subset(data_subsampled, data_subsampled[[grp.col]] == a)
+              dim(data_subsampled)
+              
+              ## write .csv
+              write.csv(data_subset, file = paste0(data.name, "_", a, "_with_tSNE.csv", sep = ""), row.names=FALSE)
+              
+              ## write .fcs
+              metadata <- data.frame(name=dimnames(data_subset)[[2]],desc=paste('column',dimnames(data_subset)[[2]],'from dataset'))
+              metadata
+              
+              ## Create FCS file metadata - ranges, min, and max settings
+              #metadata$range <- apply(apply(data_subset,2,range),2,diff)
+              metadata$minRange <- apply(data_subset,2,min)
+              metadata$maxRange <- apply(data_subset,2,max)
+              
+              data_subset.ff <- new("flowFrame",exprs=as.matrix(data_subset), parameters=AnnotatedDataFrame(metadata)) # in order to create a flow frame, data needs to be read as matrix by exprs
+              head(data_subset.ff)
+              write.FCS(data_subset.ff, paste0(data.name, "_", a, "_with_tSNE", ".fcs"))
+            }
+          }
+          
+        ### 10.9 - Write individual files (with tSNE and FlowSOM parameters) to .csv and .fcs     
+          
+          if(write.tSNE.sep == 1){
+            
+            for (a in AllSampleNames) {
+              data_subset <- subset(data_subsampled, data_subsampled[[samp.col]] == a)
+              
+              ## write .csv
+              write.csv(data_subset, file = paste0(data.name, "_", a, "_with_tSNE.csv", sep = ""), row.names=FALSE)
+              
+              ## write .fcs
+              metadata <- data.frame(name=dimnames(data_subset)[[2]],desc=paste('column',dimnames(data_subset)[[2]],'from dataset'))
+              
+              ## Create FCS file metadata - ranges, min, and max settings
+              #metadata$range <- apply(apply(data_subset,2,range),2,diff)
+              metadata$minRange <- apply(data_subset,2,min)
+              metadata$maxRange <- apply(data_subset,2,max)
+              
+              data_subset.ff <- new("flowFrame",exprs=as.matrix(data_subset), parameters=AnnotatedDataFrame(metadata)) # in order to create a flow frame, data needs to be read as matrix by exprs
+              head(data_subset.ff)
+              write.FCS(data_subset.ff, paste0(data.name, "_", a, "_with_tSNE", ".fcs"))
+            }
+            
+            ## Move back to PrimaryDirectory
+            setwd(PrimaryDirectory)
+            getwd()
+          }
+          
+          # note -- in the final data output, all parameters are included, but only the subsampled and/or transformed cells
+          
+        }
+        
+        
+###################################################### 11. tSNEplots-all markers ######################################################  
+        
+        if(Run_tSNEplots == 1){    
+          
+          ## Create 'jet' colour scheme (not available by default in R)
+          jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
+          
+          ## Set your working directory here (e.g. "/Users/Tom/Desktop/")
+          setwd(OutputDirectory)
+          setwd("Output_tSNE_all+select/Output_tSNE_data") 
+          
+          ## Assign the working directory as 'PrimaryDirectory'
+          PlotDirectory <- getwd()
+          PlotDirectory
+          
+          ## Create a list of file names (names of the samples) and check file names
+          PlotFiles <- list.files(path=PlotDirectory, pattern = ".csv") # ALTERNATIVE: list.files(pattern = '\\.csv')
+          PlotFiles
+          
+          ## In the output of the previous line, you will see the names for the tSNE parameters -- insert them in between the "" below
+          plotXname <- tSNE_X_name
+          plotYname <- tSNE_Y_name
+          
+          
+        ### 11.1 - ESTABLISH GLOBAL SCALE LIMITS FOR COLOUR and XY #####
+          
+          ## Create a 'list' of the data from all CSV files, then combine data into one large dataframe
+          tables <- lapply(PlotFiles, read.csv, header = TRUE)
+          combined.df <- do.call(rbind , tables)
+          
+          numeric.only <- sapply(combined.df, is.numeric)
+          combined.df <- combined.df[ , numeric.only] # removes any non 'numeric' values
+          
+          ## Find column names for whole dataset
+          names(combined.df)
+          
+          ## find maximum and minimum tSNE-X value --> define these
+          Xmax <- max(combined.df[[plotXname]]) # double check function
+          Ymax <- max(combined.df[[plotYname]])
+          
+          ## find maximum and minimum tSNE-Y value --> define these
+          Xmin <- min(combined.df[[plotXname]]) # double check function
+          Ymin <- min(combined.df[[plotYname]])
+          
+          # Using STEP 2b, the colour scale max and min will be the same for all samples, despite what the individual sample max or min is
+          # Also using STEP2b, the X and Y limits will be the same for all samples, despite what the individual sample max or min is
+          
+          
+        ### 11.2 - Loop with  samples in separate folders #####  
+          ## First, change the tSNE parameters (on lines 103 and 104)
+          ## Then run all of the script below
+          
+          ## Set wd
+          setwd(PlotDirectory)
+          getwd()
+          
+          ## Create output folder (if a folder called "Output" already exists, nothing will happen)
+          dir.create("Output(tSNEplots-all+select)", showWarnings = FALSE)
+          
+          for (File in PlotFiles){ 
+            
+            ## CSV is read into dataframe 'CurrentSampleCSV'
+            CurrentSampleCSV <- read.csv(File)
+            CurrentSampleCSV
+            
+            numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+            CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+            
+            # Modifications to the name are made here
+            File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+            File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+            
+            ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+            plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+            plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+            
+            ## Create subdirectory
+            setwd("Output(tSNEplots-all+select)") 
+            newdir <- paste0(File)
+            dir.create(newdir, showWarnings = FALSE)
+            setwd(newdir) 
+            getwd()
+            
+            ## Sub-loop to create one image for every parameter
+            for (i in names(CurrentSampleCSV)){ 
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY)) +
+                geom_point(size = 0.5, mapping=aes_string(color=i))+ # 2 for large # 0.5 for small
+                scale_colour_gradientn(colours = jet.colors(50),
+                                       limits = c(quantile(combined.df[[i]], probs = c(0.01)), #0.03-01 seems to work well
+                                                  quantile(combined.df[[i]], probs = c(0.995))), #0.97-995 seems to work well
+                                       oob=squish) + 
+                ggtitle(i) +
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  legend.text=element_text(size=15), # large = 30 # small = 8
+                  legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, "-", i,".jpeg"), width = 4, height = 3) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+            }
+            
+            ## Move back to PrimaryDirectory
+            setwd(PlotDirectory)
+            getwd()  
+          }
+        }
+        
+        
+###################################################### 12. ClusterPlots-select ######################################################  
+        
+        if(Run_ClusterPlots == 1){
+          
+        ### 12.1 - Setup
+          
+          ## WD and colours
+          jet.black <- colorRampPalette(c("black", "#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000", "purple"))
+          colour.scheme <- jet.black
+          
+          setwd(OutputDirectory)
+          setwd("Output_tSNE_all+select/Output_tSNE_data")
+          dir.create("Output_NumPlots", showWarnings = FALSE)
+          
+          FileNames <- list.files(path=getwd(), pattern = ".csv")
+          FileNames
+          
+          ## In the output of the previous line, you will see the names for the tSNE parameters -- insert them in between the "" below
+          plotXname <- tSNE_X_name
+          plotYname <- tSNE_Y_name
+          cluster.name <- FlowSOM_meta_name
+          
+          cluspl.n.sub # already defined
+          cluspl.n.sub.seed # already defined
+          
+        ### 12.2 - Read files 
+          ## Read all CSV files into a list
+          files  <- list.files(pattern = '\\.csv')
+          
+          ## Create a 'list' of the data from all CSV files, then combine data into one large dataframe
+          tables <- lapply(files, read.csv, header = TRUE)
+          combined.df <- do.call(rbind , tables)
+          numeric.only <- sapply(combined.df, is.numeric)
+          combined.df <- combined.df[ , numeric.only] # removes any non 'numeric' values
+          
+          ## find maximum and minimum tSNE-X value --> define these
+          Xmax <- max(combined.df[[plotXname]]) # double check function
+          Ymax <- max(combined.df[[plotYname]])
+          
+          ## find maximum and minimum tSNE-Y value --> define these
+          Xmin <- min(combined.df[[plotXname]]) # double check function
+          Ymin <- min(combined.df[[plotYname]])
+          
+        ### 12.3 - Loop for Number Plot
+          
+          for (File in FileNames){ 
+            setwd(OutputDirectory)
+            setwd("Output_tSNE_all+select/Output_tSNE_data")
+            
+            ## CSV is read into dataframe 'CurrentSampleCSV'
+            CurrentSampleCSV <- read.csv(File)
+            numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+            CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+            
+            ## Subsample to pre-defined number manageable number of points (only if samples has more cells than the target downsample number)
+            if(nrow(CurrentSampleCSV) > cluspl.n.sub){
+              set.seed(cluspl.n.sub.seed)
+              CurrentSampleCSV <- CurrentSampleCSV[sample(1:nrow(CurrentSampleCSV), cluspl.n.sub), ]
+            }
+            
+            # Modifications to the name are made here
+            File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+            File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+            
+            ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+            plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+            plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+            
+            cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedA)
+            clust.no <- CurrentSampleCSV[[cluster.name]]
+            
+            ## Subdirectory
+            setwd(OutputDirectory)
+            setwd("Output_tSNE_all+select/Output_tSNE_data/Output_NumPlots")
+            dir.create(paste0("Output_NumPlots", "_seed", FlowSOM_seedA), showWarnings = FALSE)
+            
+            setwd(OutputDirectory)
+            setwd(paste0("Output_tSNE_all+select/Output_tSNE_data/Output_NumPlots/", "Output_NumPlots", "_seed", FlowSOM_seedA))
+            
+            tSNEplotLoop <- ggplot(
+              data = `CurrentSampleCSV`,
+              aes(x = plotX, y = plotY)) +
+              scale_colour_gradientn(colours = colour.scheme(length(unique(clust.no)))) +
+              geom_text(aes(label=clust.no, colour=clust.no)) +
+              
+              #aes(x = plotX, y = plotY)) +
+              #geom_point(size = 0.5)+ # 2 for large # 0.5 for small
+              #scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+              
+              xlim(Xmin, Xmax)+
+              ylim(Ymin, Ymax)+
+              ggtitle(cluster.name) +
+              # xlab("tSNE1") + # use if desired, must also change theme settings below
+              # ylab("tSNE2") + # use if desired, must also change theme settings below
+              theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                axis.line=element_blank(),
+                axis.text.x=element_blank(),
+                axis.text.y=element_blank(),
+                axis.ticks=element_blank(),
+                axis.title.x=element_blank(),
+                axis.title.y=element_blank(),
+                panel.grid.major = element_blank(),
+                panel.background=element_blank(),
+                panel.border=element_blank(),
+                panel.grid.minor=element_blank(),
+                plot.background=element_blank(),
+                legend.position = "right",
+                legend.text=element_text(size=15), # large = 30 # small = 8
+                legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                legend.title=element_blank(),
+                plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+              )
+            ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 6, height = 4.5) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+            
+            ## Move back to PrimaryDirectory
+            setwd(PrimaryDirectory)
+            getwd()  
+          }
+          
+          if (Run_FlowSOM_repeat == 1){
+            ### 12.3.1 - Second FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              ## Subsample to pre-defined number manageable number of points (only if samples has more cells than the target downsample number)
+              if(nrow(CurrentSampleCSV) > cluspl.n.sub){
+                set.seed(cluspl.n.sub.seed)
+                CurrentSampleCSV <- CurrentSampleCSV[sample(1:nrow(CurrentSampleCSV), cluspl.n.sub), ]
+              }
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedB)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data/Output_NumPlots")
+              dir.create(paste0("Output_NumPlots", "_seed", FlowSOM_seedB), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all+select/Output_tSNE_data/Output_NumPlots/", "Output_NumPlots", "_seed", FlowSOM_seedB))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY)) +
+                scale_colour_gradientn(colours = colour.scheme(length(unique(clust.no)))) +
+                geom_text(aes(label=clust.no, colour=clust.no)) +
+                
+                #aes(x = plotX, y = plotY)) +
+                #geom_point(size = 0.5)+ # 2 for large # 0.5 for small
+                #scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  legend.text=element_text(size=15), # large = 30 # small = 8
+                  legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 6, height = 4.5) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()
+              
+            }
+            
+            ### 12.3.2 - Third FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              ## Subsample to pre-defined number manageable number of points (only if samples has more cells than the target downsample number)
+              if(nrow(CurrentSampleCSV) > cluspl.n.sub){
+                set.seed(cluspl.n.sub.seed)
+                CurrentSampleCSV <- CurrentSampleCSV[sample(1:nrow(CurrentSampleCSV), cluspl.n.sub), ]
+              }
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedC)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data/Output_NumPlots")
+              dir.create(paste0("Output_NumPlots", "_seed", FlowSOM_seedC), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all+select/Output_tSNE_data/Output_NumPlots/", "Output_NumPlots", "_seed", FlowSOM_seedC))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY)) +
+                scale_colour_gradientn(colours = colour.scheme(length(unique(clust.no)))) +
+                geom_text(aes(label=clust.no, colour=clust.no)) +
+                
+                #aes(x = plotX, y = plotY)) +
+                #geom_point(size = 0.5)+ # 2 for large # 0.5 for small
+                #scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  legend.text=element_text(size=15), # large = 30 # small = 8
+                  legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 6, height = 4.5) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()
+              
+            }
+            
+          }
+          
+          
+        ### 12.4 - CLUSTER COLOUR PLOT
+          
+          ## Set wd
+          setwd(OutputDirectory)
+          setwd("Output_tSNE_all+select/Output_tSNE_data")
+          dir.create("Output_ClusterPlots", showWarnings = FALSE)
+          
+          for (File in FileNames){ 
+            setwd(OutputDirectory)
+            setwd("Output_tSNE_all+select/Output_tSNE_data")
+            
+            ## CSV is read into dataframe 'CurrentSampleCSV'
+            CurrentSampleCSV <- read.csv(File)
+            numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+            CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+            
+            # Modifications to the name are made here
+            File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+            File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+            
+            ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+            plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+            plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+            
+            cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedA)
+            clust.no <- CurrentSampleCSV[[cluster.name]]
+            
+            ## Create subdirectory
+            setwd(OutputDirectory)
+            setwd("Output_tSNE_all+select/Output_tSNE_data/Output_ClusterPlots")
+            dir.create(paste0("Output_ClusterPlots", "_seed", FlowSOM_seedA), showWarnings = FALSE)
+            
+            setwd(OutputDirectory)
+            setwd(paste0("Output_tSNE_all+select/Output_tSNE_data/Output_ClusterPlots/", "Output_ClusterPlots", "_seed", FlowSOM_seedA))
+            
+            tSNEplotLoop <- ggplot(
+              data = `CurrentSampleCSV`,
+              aes(x = plotX, y = plotY, colour = as.factor(clust.no))) +
+              geom_point(size = 1)+ # 2 for large # 0.5 for small
+              #scale_colour_gradientn(colours = colour.scheme(50)) + 
+              scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+              ggtitle(cluster.name) +
+              xlim(Xmin, Xmax)+
+              ylim(Ymin, Ymax)+
+              ggtitle(cluster.name) +
+              # xlab("tSNE1") + # use if desired, must also change theme settings below
+              # ylab("tSNE2") + # use if desired, must also change theme settings below
+              theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                axis.line=element_blank(),
+                axis.text.x=element_blank(),
+                axis.text.y=element_blank(),
+                axis.ticks=element_blank(),
+                axis.title.x=element_blank(),
+                axis.title.y=element_blank(),
+                panel.grid.major = element_blank(),
+                panel.background=element_blank(),
+                panel.border=element_blank(),
+                panel.grid.minor=element_blank(),
+                plot.background=element_blank(),
+                legend.position = "right",
+                #legend.text=element_text(size=10), # large = 30 # small = 8
+                #legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                #legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                #legend.title=element_blank(),
+                plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+              )
+            ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 10.5, height = 6.75) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+            
+            ## Move back to PrimaryDirectory
+            setwd(PrimaryDirectory)
+            getwd()  
+          }
+          
+          if (Run_FlowSOM_repeat == 1) {
+            ### 12.4.1 - Second FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedB)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Create subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data/Output_ClusterPlots")
+              dir.create(paste0("Output_ClusterPlots", "_seed", FlowSOM_seedB), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all+select/Output_tSNE_data/Output_ClusterPlots/", "Output_ClusterPlots", "_seed", FlowSOM_seedB))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY, colour = as.factor(clust.no))) +
+                geom_point(size = 1)+ # 2 for large # 0.5 for small
+                #scale_colour_gradientn(colours = colour.scheme(50)) + 
+                scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                ggtitle(cluster.name) +
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  #legend.text=element_text(size=10), # large = 30 # small = 8
+                  #legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  #legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  #legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 10.5, height = 6.75) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()  
+            }
+            
+          ### 12.4.2 - Second FlowSOM seed plots
+            for (File in FileNames){ 
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data")
+              
+              ## CSV is read into dataframe 'CurrentSampleCSV'
+              CurrentSampleCSV <- read.csv(File)
+              numeric.only <- sapply(CurrentSampleCSV, is.numeric) 
+              CurrentSampleCSV <- CurrentSampleCSV[ , numeric.only] # removes any non 'numeric' values
+              
+              # Modifications to the name are made here
+              File <- gsub(" ", "_", File) # replaces empty spaces in the file name with '_'
+              File <- gsub(".csv", "", File) # removes ".csv" from the file name 
+              
+              ## Defines the 'tSNE' parameters that will be used to set the X and y axis
+              plotX <- CurrentSampleCSV[[plotXname]] # defines the tSNE1 (x-axis) parameter name from your file
+              plotY <- CurrentSampleCSV[[plotYname]] # defines the tSNE2 (y-axis) parameter name from your file
+              
+              cluster.name <- paste0(FlowSOM_meta_name, FlowSOM_seedC)
+              clust.no <- CurrentSampleCSV[[cluster.name]]
+              
+              ## Create subdirectory
+              setwd(OutputDirectory)
+              setwd("Output_tSNE_all+select/Output_tSNE_data/Output_ClusterPlots")
+              dir.create(paste0("Output_ClusterPlots", "_seed", FlowSOM_seedC), showWarnings = FALSE)
+              
+              setwd(OutputDirectory)
+              setwd(paste0("Output_tSNE_all+select/Output_tSNE_data/Output_ClusterPlots/", "Output_ClusterPlots", "_seed", FlowSOM_seedC))
+              
+              tSNEplotLoop <- ggplot(
+                data = `CurrentSampleCSV`,
+                aes(x = plotX, y = plotY, colour = as.factor(clust.no))) +
+                geom_point(size = 1)+ # 2 for large # 0.5 for small
+                #scale_colour_gradientn(colours = colour.scheme(50)) + 
+                scale_colour_manual(name = cluster.name, values = c(colour.scheme(length(unique(clust.no))))) +
+                ggtitle(cluster.name) +
+                xlim(Xmin, Xmax)+
+                ylim(Ymin, Ymax)+
+                ggtitle(cluster.name) +
+                # xlab("tSNE1") + # use if desired, must also change theme settings below
+                # ylab("tSNE2") + # use if desired, must also change theme settings below
+                theme( # panel.background = element_rect(fill = "white", colour = "white", size = 0.5), # change 'colour' to black for informative axis
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.minor=element_blank(),
+                  plot.background=element_blank(),
+                  legend.position = "right",
+                  #legend.text=element_text(size=10), # large = 30 # small = 8
+                  #legend.key.height=unit(1,"cm"), # large = 3 # small = 1.2
+                  #legend.key.width=unit(0.4,"cm"), # large = 1 # small = 0.4
+                  #legend.title=element_blank(),
+                  plot.title = element_text(color="Black", face="bold", size=15, hjust=0) # size 70 for large, # 18 for small
+                )
+              ggsave(tSNEplotLoop, filename = paste0(File, ".jpeg"), width = 10.5, height = 6.75) # Large size default width = 14.4 height = 12 (11.35 without title), default = PDF, # small w3.6, h3
+              
+              ## Move back to PrimaryDirectory
+              setwd(PrimaryDirectory)
+              getwd()  
+              
+            }
+            
+          }
+          
+          ## Move back to PrimaryDirectory
+          setwd(PrimaryDirectory)
+          getwd() 
+        }   
         
         
