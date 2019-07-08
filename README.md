@@ -37,7 +37,7 @@ For usage instructions, please see https://github.com/sydneycytometry/CAPX/wiki/
 If you use these scripts in your work, please cite this github using the information below. You can cite the specific version that you used in your work.
 
 
-Ashhurst, T. M. (2018). Cytometry Analysis Pipeline for large and compleX dataests v2.5. GitHub repository. DOI: TBC, repository: https://github.com/sydneycytometry/CAPX.
+Ashhurst, T. M. (2018). Cytometry Analysis Pipeline for large and compleX dataests v2.5. GitHub repository. DOI: 10.5281/zenodo.3273252, repository: https://github.com/sydneycytometry/CAPX.
 
 
 **Version history**
