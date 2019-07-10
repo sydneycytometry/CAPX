@@ -303,7 +303,8 @@
     ### 3.2 - Merge data and remove duplicates
                 
             ## Concatenate into one large data frame
-                data <- rbindlist(DataList) 
+                rbindlist(DataList, use.names = TRUE, #"use.names" groups columns based on name
+                          fill = TRUE) #"fill" creates new columns if they're missing, giving them NA 
                 data
                 
             ## Remove 'DataList' 
