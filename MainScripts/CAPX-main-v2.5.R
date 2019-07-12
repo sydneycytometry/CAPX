@@ -1335,7 +1335,7 @@
                 geom_point(size = 0.5, mapping=aes_string(color=i))+ # 2 for large # 0.5 for small
                 scale_colour_gradientn(colours = jet.colors(50),
                                        limits = c(quantile(combined.df[[i]], probs = c(0.01), na.rm = TRUE), #0.03-01 seems to work well; "na.rm" ignores NA if extra columns were added
-                                                  quantile(combined.df[[i]], probs = c(0.995)), na.rm = TRUE), #0.97-995 seems to work well; "na.rm" ignores NA if extra columns were added
+                                                  quantile(combined.df[[i]], probs = c(0.995), na.rm = TRUE)), #0.97-995 seems to work well; "na.rm" ignores NA if extra columns were added
                                        oob=squish) + 
                 ggtitle(i) +
                 xlim(Xmin, Xmax)+
@@ -2190,7 +2190,7 @@
                 geom_point(size = 0.5, mapping=aes_string(color=i))+ # 2 for large # 0.5 for small
                 scale_colour_gradientn(colours = jet.colors(50),
                                        limits = c(quantile(combined.df[[i]], probs = c(0.01), na.rm = TRUE), #0.03-01 seems to work well; "na.rm" ignores NA if extra columns were added
-                                                  quantile(combined.df[[i]], probs = c(0.995)), na.rm = TRUE), #0.97-995 seems to work well; "na.rm" ignores NA if extra columns were added
+                                                  quantile(combined.df[[i]], probs = c(0.995), na.rm = TRUE)), #0.97-995 seems to work well; "na.rm" ignores NA if extra columns were added
                                        oob=squish) + 
                 ggtitle(i) +
                 xlim(Xmin, Xmax)+
