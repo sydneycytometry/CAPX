@@ -320,8 +320,24 @@
                   data <- as.data.frame(data)
                   dim(data) # check to see if the number of parameters has reduced (no change means no duplicates were present)
                 }
+
+            ## Remove any troublesome columns (if required)
+                as.matrix(colnames(data))
                 
+                {
+                  data[["190BCKG"]] <- NULL # between [[" "]], put column name here
+                  data[["140Ce"]] <- NULL
+                  data[["133Cs"]] <- NULL
+                  data[["157Gd"]] <- NULL
+                  data[["113In"]] <- NULL
+                  data[["208Pb"]] <- NULL
+                  data[["120Sn"]] <- NULL
+                  data[["131Xe"]] <- NULL
+                  data[["SampleID"]] <- NULL
+                  data[["Event.."]] <- NULL
+                }
                 
+                as.matrix(colnames(data))
                 
     ### 3.3 - If required, Arcsinh transformation     
                 
@@ -392,6 +408,7 @@
                 ClusteringColNos_tSNE
                 
                 ClusteringCols_tSNE <- ColumnNames[ClusteringColNos_tSNE]
+                ClusteringCols_tSNE
                 
     ### 4.3 - Specify CLUSTERING options   
             
